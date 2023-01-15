@@ -1,20 +1,38 @@
 const { ApolloServer, gql } = require("apollo-server");
+const fs = require("fs");
+const path = require("path");
 
-// GraphQLスキーマの定義
-const typeDefs = gql`
-    type Query {
-        info: String!
-    }
-`;
+let links = [
+    {
+        id: "link-0",
+        description: "GraphQLを学ぶ",
+        url: "www.graphql-tutorial.com",
+    },
+]
 
 const resolvers = {
     Query: {
         info: () => "test",
+        feed: () => links,
+    },
+    Mutation: {
+        post: (parent, args) => {
+            let idCount = links.length;
+
+            const link = {
+                id: `link-${idCount++}`,
+                description: args.description,
+                url: args.url,
+            }
+
+            links.push(link);
+            return links;
+        },
     },
 };
 
 const server = new ApolloServer({
-    typeDefs,
+    typeDefs: fs.readFileSync(path.join(__dirname, "schema.graphql"),"utf-8"),
     resolvers,
 });
 
